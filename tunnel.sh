@@ -21,6 +21,17 @@ bold() { printf "\033[1m%s\033[0m\n" "$1"; }
 dim() { printf "\033[2m%s\033[0m\n" "$1"; }
 ask() { printf "\n\033[1m%s\033[0m\n" "$1"; }
 
+cleanup_pids() {
+  shopt -s nullglob
+  for f in "$PID_DIR"/*.pid; do
+    pid=$(cat "$f" 2>/dev/null || true)
+    if [[ -z "$pid" ]] || ! ps -p "$pid" >/dev/null 2>&1; then
+      rm -f "$f"
+    fi
+  done
+  shopt -u nullglob
+}
+
 usage() {
   cat <<EOF
 Usage:
@@ -39,6 +50,11 @@ Examples:
 EOF
   exit 1
 }
+
+# ---------------------------
+# Clean up stale connections
+# ---------------------------
+cleanup_pids
 
 # -------------------------
 # Commands: list / kill
