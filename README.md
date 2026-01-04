@@ -2,16 +2,12 @@
 
 A small Bash utility to **safely tunnel `localhost` services over SSH** using a middle-man server — ideal for development when your home machine is **not directly accessible from the internet**.
 
----
-
 ## 📦 Requirements
 
 * Bash (macOS / Linux)
 * OpenSSH (`ssh`)
 * A server that you can connect to using SSH (VPS, jump host, etc.)
   * If you can connect to it using SSH 
-
----
 
 ## 🔧 Installation
 
@@ -23,8 +19,6 @@ cd tunnel-sh
 chmod +x tunnel.sh
 ```
 
----
-
 ## 🚀 Features
 
 * ✅ Client / Server modes
@@ -35,29 +29,20 @@ chmod +x tunnel.sh
 * ❌ Kill all tunnels safely
 * 🤖 Non-interactive mode for scripts/CI
 
----
-
 ## 🧠 Usage
 
-### Start a reverse tunnel (home machine)
+Start a reverse tunnel on your powerfull machine.
 
 ```bash
 ./tunnel.sh server -p 4200 --server user@example.com
 ```
 
-This exposes `localhost:4200` on your **home machine** to the middle-man server.
-
----
-
-### Start a local tunnel (remote laptop)
-
+Expose the port on your mobile machine:
 ```bash
-./tunnel.sh client -p 4200
+./tunnel.sh client -p 4200 --server user@example.com
 ```
 
-Now open `http://localhost:4200` on your laptop behaves as if the service were running locally on your home desktop.
-
----
+This exposes `localhost:4200` on your **home machine** as if you were connected to your remote machine.
 
 ## 🧑‍💻 Interactive Mode
 
@@ -75,8 +60,6 @@ Tunnel configuration
 ➤ Middle-man server (user@host) [user@example.com]:
 ```
 
----
-
 ## ⚙️ Non-interactive Mode
 
 Skip confirmation prompts with `-y`:
@@ -84,8 +67,6 @@ Skip confirmation prompts with `-y`:
 ```bash
 ./tunnel.sh server -p 4200 --server user@example.com -y
 ```
-
----
 
 ## 📋 List Running Tunnels
 
@@ -100,8 +81,6 @@ Active tunnels:
 • server_4200 (PID 12345)
 • client_4200 (PID 12378)
 ```
-
----
 
 ## ❌ Stop All Tunnels
 
@@ -120,8 +99,6 @@ If an error occurs, you can kill clean up everything using the following command
 pkill -f "ssh"
 rm -rf ~/.tunnel-pids
 ```
-
----
 
 ## 📁 Files & State
 
@@ -142,8 +119,6 @@ rm -rf ~/.tunnel-pids
 rm ~/.tunnelrc
 ```
 
----
-
 ## 🔐 Security Notes
 
 * Traffic is encrypted end-to-end via SSH
@@ -157,8 +132,6 @@ This makes it suitable for:
 * Dev servers bound to localhost
 * Security-sensitive tooling
 
----
-
 ## Motivation
 
 This tool was created to support a development workflow where the primary development machine is not physically accessible, but must still behave like a local environment.
@@ -170,8 +143,6 @@ This script provides a lightweight, SSH-based solution that ensures:
 * `localhost` remains `localhost`
 * No public services or custom domains are introduced
 * Development behavior is identical whether working locally or remotely
-
----
 
 ## 📄 License
 
