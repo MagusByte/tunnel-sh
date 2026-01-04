@@ -2,16 +2,16 @@
 
 A small Bash utility to **safely tunnel `localhost` services over SSH** using a middle-man server — ideal for development when your home machine is **not directly accessible from the internet**.
 
-## 📦 Requirements
+## Requirements
 
 * Bash (macOS / Linux)
 * OpenSSH (`ssh`)
 * A server that you can connect to using SSH (VPS, jump host, etc.)
   * If you can connect to it using SSH 
 
-## 🔧 Installation
+## Installation
 
-Clone the repo or copy the script:
+Clone the repo or copy the script on the machines where you want to use it:
 
 ```bash
 git clone https://github.com/MagusByte/tunnel-sh
@@ -19,7 +19,7 @@ cd tunnel-sh
 chmod +x tunnel.sh
 ```
 
-## 🚀 Features
+## Features
 
 * ✅ Client / Server modes
 * 💾 Remembers port & server between runs
@@ -29,7 +29,7 @@ chmod +x tunnel.sh
 * ❌ Kill all tunnels safely
 * 🤖 Non-interactive mode for scripts/CI
 
-## 🧠 Usage
+## Usage
 
 Start a reverse tunnel on your powerfull machine.
 
@@ -44,7 +44,7 @@ Expose the port on your mobile machine:
 
 This exposes `localhost:4200` on your **home machine** as if you were connected to your remote machine.
 
-## 🧑‍💻 Interactive Mode
+## Interactive Mode
 
 If you omit values, the script will ask nicely and remember your answers:
 
@@ -60,7 +60,7 @@ Tunnel configuration
 ➤ Middle-man server (user@host) [user@example.com]:
 ```
 
-## ⚙️ Non-interactive Mode
+## Non-interactive Mode
 
 Skip confirmation prompts with `-y`:
 
@@ -68,7 +68,7 @@ Skip confirmation prompts with `-y`:
 ./tunnel.sh server -p 4200 --server user@example.com -y
 ```
 
-## 📋 List Running Tunnels
+## List Running Tunnels
 
 ```bash
 ./tunnel.sh list
@@ -82,7 +82,7 @@ Active tunnels:
 • client_4200 (PID 12378)
 ```
 
-## ❌ Stop All Tunnels
+## Stop All Tunnels
 
 ```bash
 ./tunnel.sh kill
@@ -90,17 +90,16 @@ Active tunnels:
 
 Safely stops all running tunnels started by the script on your **current** machine.
 
-### 🆘 Emergency
+### Emergency stop
 
 If an error occurs, you can kill clean up everything using the following command:
 
 ```bash
 # NOTE: This will kill any ssh connection.
 pkill -f "ssh"
-rm -rf ~/.tunnel-pids
 ```
 
-## 📁 Files & State
+## Files & State
 
 | File              | Purpose                        |
 | ----------------- | ------------------------------ |
@@ -111,15 +110,14 @@ This keeps tunnel management isolated and predictable.
 
 ### Clean up
 
-To remove everything, run the following command
+To remove everything, run the following commands
 
 ```bash
-pkill -f "ssh"
 rm -rf ~/.tunnel-pids
 rm ~/.tunnelrc
 ```
 
-## 🔐 Security Notes
+## Security Notes
 
 * Traffic is encrypted end-to-end via SSH
 * No ports are exposed publicly on your home machine
@@ -144,6 +142,6 @@ This script provides a lightweight, SSH-based solution that ensures:
 * No public services or custom domains are introduced
 * Development behavior is identical whether working locally or remotely
 
-## 📄 License
+## License
 
-MIT — do whatever you want, just don’t blame me 😉
+MIT
