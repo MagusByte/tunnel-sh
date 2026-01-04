@@ -122,8 +122,13 @@ done
 ask "Tunnel configuration"
 
 if [[ -z "$PORT" ]]; then
-  read -rp "➤ Port to forward [${SAVED_PORT:-4200}]: " PORT
-  PORT=${PORT:-${SAVED_PORT:-4200}}
+  read -rp "➤ Port to forward [${SAVED_PORT}]: " PORT
+  PORT=${PORT:-$SAVED_PORT}
+fi
+
+if [[ -z "$PORT" ]]; then
+  echo "Port is required."
+  exit 1
 fi
 
 if [[ -z "$SERVER" ]]; then
@@ -177,4 +182,3 @@ bold "Tunnel running"
 dim "PID: $PID"
 dim "Use: tunnel.sh kill  or  tunnel.sh list"
 
-wait "$PID"
