@@ -21,77 +21,90 @@ bold() { printf "\033[1m%s\033[0m\n" "$1"; }
 dim() { printf "\033[2m%s\033[0m\n" "$1"; }
 ask() { printf "\n\033[1m%s\033[0m\n" "$1"; }
 
-cleanup_pids() {
-  shopt -s nullglob
-  for f in "$PID_DIR"/*.pid; do
-    pid=$(cat "$f" 2>/dev/null || true)
-    if [[ -z "$pid" ]] || ! ps -p "$pid" >/dev/null 2>&1; then
-      rm -f "$f"
-    fi
-  done
-  shopt -u nullglob
-}
-
 usage() {
   cat <<EOF
 Usage:
   tunnel.sh client|server [options]
-  tunnel.sh kill
-  tunnel.sh list
+  tunnel.sh list      Lists all connections
+  tunnel.sh kill      Removes all connections
+  tunnel.sh restore   Restore all stale connections
 
 Options:
   -p <port>           Port to forward
   --server <user@h>   Middle-man SSH server
   -y                  Skip confirmation
-
-Examples:
-  tunnel.sh client -p 4200
-  tunnel.sh server --server user@example.com -p 4200
 EOF
   exit 1
 }
 
-# ---------------------------
-# Clean up stale connections
-# ---------------------------
-cleanup_pids
-
 # -------------------------
-# Commands: list / kill
+# Commands: list / kill / restore
 # -------------------------
 if [[ "$1" == "list" ]]; then
-  bold "Active tunnels:"
+  bold "Known tunnels:"
   if ls "$PID_DIR"/*.pid >/dev/null 2>&1; then
     for f in "$PID_DIR"/*.pid; do
-      pid=$(cat "$f")
+      source "$f"
       name=$(basename "$f" .pid)
-      if ps -p "$pid" >/dev/null 2>&1; then
-        echo "• $name (PID $pid)"
+      if [[ -n "${PID:-}" ]] && ps -p "$PID" >/dev/null 2>&1; then
+        echo "• $name (PID $PID, running)"
       else
         echo "• $name (stale)"
+        dim "  $CMD"
       fi
     done
   else
-    dim "No active tunnels."
+    dim "No tunnels recorded."
   fi
   exit 0
 fi
 
 if [[ "$1" == "kill" ]]; then
-  bold "Stopping tunnels..."
+  bold "Stopping running tunnels..."
   if ls "$PID_DIR"/*.pid >/dev/null 2>&1; then
     for f in "$PID_DIR"/*.pid; do
-      pid=$(cat "$f")
+      source "$f"
       name=$(basename "$f" .pid)
-      if ps -p "$pid" >/dev/null 2>&1; then
-        kill "$pid"
-        echo "• Stopped $name (PID $pid)"
+      if [[ -n "${PID:-}" ]] && ps -p "$PID" >/dev/null 2>&1; then
+        kill "$PID"
+        echo "• Stopped $name (PID $PID)"
       fi
-      rm -f "$f"
     done
   else
-    dim "No tunnels running."
+    dim "No tunnels recorded."
   fi
+  exit 0
+fi
+
+if [[ "$1" == "restore" ]]; then
+  bold "Restoring stale tunnels..."
+  restored=false
+
+  if ls "$PID_DIR"/*.pid >/dev/null 2>&1; then
+    for f in "$PID_DIR"/*.pid; do
+      source "$f"
+      name=$(basename "$f" .pid)
+
+      if [[ -z "${PID:-}" ]] || ! ps -p "$PID" >/dev/null 2>&1; then
+        bold "• Restoring $name"
+        eval "$CMD" &
+        NEW_PID=$!
+
+        cat > "$f" <<EOF
+PID=$NEW_PID
+CMD='$CMD'
+EOF
+
+        dim "  New PID: $NEW_PID"
+        restored=true
+      fi
+    done
+  fi
+
+  if ! $restored; then
+    dim "No stale tunnels to restore."
+  fi
+
   exit 0
 fi
 
@@ -183,18 +196,22 @@ fi
 PID_FILE="$PID_DIR/${MODE}_${PORT}.pid"
 
 if [[ "$MODE" == "server" ]]; then
+  CMD="ssh -N -R ${PORT}:localhost:${PORT} $SERVER"
   bold "Starting reverse tunnel..."
-  ssh -N -R "${PORT}:localhost:${PORT}" "$SERVER" &
 else
+  CMD="ssh -N -L ${PORT}:localhost:${PORT} $SERVER"
   bold "Starting local forward..."
-  ssh -N -L "${PORT}:localhost:${PORT}" "$SERVER" &
 fi
 
+eval "$CMD" &
 PID=$!
-echo "$PID" > "$PID_FILE"
+
+cat > "$PID_FILE" <<EOF
+PID=$PID
+CMD='$CMD'
+EOF
 
 echo
 bold "Tunnel running"
 dim "PID: $PID"
-dim "Use: tunnel.sh kill  or  tunnel.sh list"
-
+dim "Use: tunnel.sh list | kill | restore"
